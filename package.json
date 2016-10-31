@@ -1,0 +1,24 @@
+{
+  "name": "api-tracker",
+  "version": "0.1.0",
+  "description": "This lambda function will post CloudWatch metrics based on API usage data from CloudWatch Logs.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "ssh://git.amazon.com/pkg/Api-tracker"
+  },
+  "keywords": [
+    "aws",
+    "api",
+    "tracker"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "zlib": "^1.0.5",
+    "aws-sdk": "2.x"
+  }
+}
