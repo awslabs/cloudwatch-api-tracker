@@ -10,8 +10,7 @@ This will give you a detailed look into your API usage.
 ## Design
 
 Here is the data flow:
-- Amazon CloudTrail records API requests.
-- Amazon CloudTrail is configured to send logs to Amazon CloudWatch Logs.
+- Amazon CloudTrail is configured to send API logs to Amazon CloudWatch Logs.
 - AWS Lambda is triggered by new records that are written to the CloudWatch Log Stream.
 - AWS Lambda aggregates the number of API requests and publishes custom Amazon CloudWatch Metrics.
 
