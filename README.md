@@ -4,8 +4,8 @@ This application was designed to give customers greater insight into their AWS A
 
 This will give you a detailed look into your API usage.
 
-VERSION: 0.1.0
-AUTHORS: Joe Hsieh, Ho Ming Li, Jeremy Wallace
+**VERSION:** 0.1.0
+**AUTHORS:** Joe Hsieh, Ho Ming Li, Jeremy Wallace
 
 ## Design
 
