@@ -37,9 +37,9 @@ exports.handler = function(input, context, callback) {
     var zippedInput = new Buffer(input.awslogs.data, 'base64');
 
     // decompress the input
-    zlib.gunzip(zippedInput, function(error, buffer) {
+    zlib.gunzip(zippedInput, function(err, buffer) {
 
-        if (error) {
+        if (err) {
             callback(err);
         }
 
@@ -84,9 +84,9 @@ exports.handler = function(input, context, callback) {
 
         var apiMetricParams = [];
         var promiseList = [];
-        
+
         // Submit every 20 metric
-        
+
         for (var hash in apiMetrics) {
           apiMetricParams.push(apiMetrics[hash]);
           if (apiMetricParams.length==BATCH) {
@@ -94,9 +94,9 @@ exports.handler = function(input, context, callback) {
             apiMetricParams = [];
           }
         }
-        
+
         // Submit final set of metric
-        
+
         if (apiMetricParams.length > 0 ) promiseList.push(postToCloudWatch(apiMetricParams));
 
         // Ensure all data posted before callback
