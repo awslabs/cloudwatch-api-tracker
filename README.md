@@ -1,8 +1,6 @@
 # API Tracker
 
-This application was designed to give customers greater insight into their AWS API usage. The lambda function can be associated with a CloudWatch Log Stream of CloudTrail records. The Lambda function processes records on the CloudWatch Logs Stream and publishes custom CloudWatch metrics based on aggregating individual API usage.
-
-This will give you a detailed look into your API usage.
+This application was designed to give customers greater insight into their AWS API usage by generating custom CloudWatch Metrics based on CloudTrail logs.
 
 **VERSION:** 0.1.0
 **AUTHORS:** Joe Hsieh, Ho Ming Li, Jeremy Wallace
