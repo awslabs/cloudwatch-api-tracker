@@ -19,8 +19,7 @@ Here is the data flow:
 ```
 aws iam create-role --role-name apitrackerrole
 nano lambdapolicy.json
-```
-```
+
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -44,8 +43,7 @@ nano lambdapolicy.json
     }
     ]
   }
-```
-```
+
 aws iam create-policy --policy-name putMetricsPolicy --policy-document file://lambdapolicy.json
 aws iam attach-role-policy --role-name apitrackerrole --policy-arn <POLICY_ARN>
 ```
