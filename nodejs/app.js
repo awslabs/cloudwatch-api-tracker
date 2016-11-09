@@ -1,12 +1,13 @@
 /**
- * API tracker
+ * Cloudwatch API Tracker
+ *
  * This lambda function will publish CloudWatch metrics based on API usage.
  * It listens to a CloudWatch Log Stream that is associated with a CloudTrail log,
  * and publishes metrics in specified batches.
- * VERSION: 0.1.0
- * AUTHORS: Joe Hsieh, Ho Ming Li, Jeremy Wallace, Feng Zhou
-
-     Copyright 2015-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ *
+ * Authors: Joe Hsieh, Ho Ming Li, Jeremy Wallace
+ 
+     Copyright 2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 
      Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with the License. A copy of the License is located at
 

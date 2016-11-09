@@ -1,5 +1,5 @@
 {
-  "name": "api-tracker",
+  "name": "cloudwatch-api-tracker",
   "version": "0.1.0",
   "description": "This lambda function will post CloudWatch metrics based on API usage data from CloudWatch Logs.",
   "main": "app.js",
@@ -8,15 +8,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "ssh://git.amazon.com/pkg/Api-tracker"
+    "url": "https://github.com/awslabs/cloudwatch-api-tracker.git"
   },
   "keywords": [
     "aws",
     "api",
     "tracker"
   ],
-  "author": "",
-  "license": "MIT",
+  "author": "Ho Ming Li, Jeremy Wallace, Joe Hsieh",
+  "license": "Apache 2.0",
   "dependencies": {
     "zlib": "^1.0.5",
     "aws-sdk": "2.x"
