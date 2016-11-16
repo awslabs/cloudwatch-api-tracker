@@ -1,4 +1,4 @@
-# API Tracker
+# AWS API Usage Tracker
 
 This application was designed to give customers greater insight into their AWS API usage by generating custom CloudWatch Metrics based on CloudTrail logs.
 
