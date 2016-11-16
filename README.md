@@ -12,6 +12,10 @@ Here is the data flow:
 - AWS Lambda is triggered by new records that are written to the CloudWatch Log Stream.
 - AWS Lambda aggregates the number of API requests and publishes custom Amazon CloudWatch Metrics.
 
+# Installation
+
+Below are two different ways of configuring your AWS environment to collect metrics on API usage using this lambda function. You could configure the AWS environment with the command line, or through the web console.
+
 ## Command Line Installation
 
 1. [Follow the guide here](http://docs.aws.amazon.com/awscloudtrail/latest/userguide/send-cloudtrail-events-to-cloudwatch-logs.html) to send CloudTrail logs to CloudWatch Logs.
