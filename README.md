@@ -16,6 +16,7 @@ Here is the data flow:
 
 1. [Follow the guide here](http://docs.aws.amazon.com/awscloudtrail/latest/userguide/send-cloudtrail-events-to-cloudwatch-logs.html) to send CloudTrail logs to CloudWatch Logs.
 2. Create a role for the Lambda function:
+
   ```
   aws iam create-role --role-name apitrackerrole
   nano lambdapolicy.json
@@ -48,6 +49,7 @@ Here is the data flow:
   aws iam attach-role-policy --role-name apitrackerrole --policy-arn <POLICY_ARN>
   ```
 3. Clone this repository and zip up the nodejs directory.
+
   ```
   cd nodejs
   npm install
@@ -55,6 +57,7 @@ Here is the data flow:
   zip -r apitracker.zip nodejs
   ```
 4. At a command prompt, run the following command, where role-arn is the Lambda execution role set up in the first step, found in the IAM console under Roles:
+
   ```
   aws lambda create-function \
       --function-name apitracker \
@@ -63,7 +66,8 @@ Here is the data flow:
       --handler app.handler \
       --runtime nodejs
   ```
-5. Grant CloudWatch Logs the permission to execute your function. At a command prompt, run the following command and substitute account 123456789123 with your own and change the log-group to be the log group you want to process:v
+5. Grant CloudWatch Logs the permission to execute your function. At a command prompt, run the following command and substitute account 123456789123 with your own and change the log-group to be the log group you want to process:
+
   ```
   aws lambda add-permission \
       --function-name "apitracker" \
