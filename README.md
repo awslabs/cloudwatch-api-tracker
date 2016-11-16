@@ -16,71 +16,71 @@ Here is the data flow:
 
 1. [Follow the guide here](http://docs.aws.amazon.com/awscloudtrail/latest/userguide/send-cloudtrail-events-to-cloudwatch-logs.html) to send CloudTrail logs to CloudWatch Logs.
 2. Create a role for the Lambda function:
-```
-aws iam create-role --role-name apitrackerrole
-nano lambdapolicy.json
+  ```
+  aws iam create-role --role-name apitrackerrole
+  nano lambdapolicy.json
 
-{
-  "Version": "2012-10-17",
-  "Statement": [
   {
-    "Effect": "Allow",
-    "Action": [
-    "logs:CreateLogGroup",
-    "logs:CreateLogStream",
-    "logs:PutLogEvents"
-    ],
-    "Resource": "arn:aws:logs:*:*:*"
-    },
+    "Version": "2012-10-17",
+    "Statement": [
     {
       "Effect": "Allow",
       "Action": [
-      "cloudwatch:PutMetricData"
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents"
       ],
-      "Resource": [
-      "*"
+      "Resource": "arn:aws:logs:*:*:*"
+      },
+      {
+        "Effect": "Allow",
+        "Action": [
+        "cloudwatch:PutMetricData"
+        ],
+        "Resource": [
+        "*"
+        ]
+      }
       ]
     }
-    ]
-  }
 
-aws iam create-policy --policy-name putMetricsPolicy --policy-document file://lambdapolicy.json
-aws iam attach-role-policy --role-name apitrackerrole --policy-arn <POLICY_ARN>
-```
+  aws iam create-policy --policy-name putMetricsPolicy --policy-document file://lambdapolicy.json
+  aws iam attach-role-policy --role-name apitrackerrole --policy-arn <POLICY_ARN>
+  ```
 3. Clone this repository and zip up the nodejs directory.
-```
-cd nodejs
-npm install
-cd ../
-zip -r apitracker.zip nodejs
-```
+  ```
+  cd nodejs
+  npm install
+  cd ../
+  zip -r apitracker.zip nodejs
+  ```
 4. At a command prompt, run the following command, where role-arn is the Lambda execution role set up in the first step, found in the IAM console under Roles:
-```
-aws lambda create-function \
-    --function-name apitracker \
-    --zip-file file://apitracker.zip \
-    --role apitrackerrole \
-    --handler app.handler \
-    --runtime nodejs
-```
+  ```
+  aws lambda create-function \
+      --function-name apitracker \
+      --zip-file file://apitracker.zip \
+      --role apitrackerrole \
+      --handler app.handler \
+      --runtime nodejs
+  ```
 5. Grant CloudWatch Logs the permission to execute your function. At a command prompt, run the following command and substitute account 123456789123 with your own and change the log-group to be the log group you want to process:v
-```
-aws lambda add-permission \
-    --function-name "apitracker" \
-    --statement-id "apitracker" \
-    --principal "logs.us-east-1.amazonaws.com" \
-    --action "lambda:InvokeFunction" \
-    --source-arn "arn:aws:logs:us-east-1:123456789123:log-group:CloudTrail/logs:*" \
-    --source-account "123456789123"
-```
+  ```
+  aws lambda add-permission \
+      --function-name "apitracker" \
+      --statement-id "apitracker" \
+      --principal "logs.us-east-1.amazonaws.com" \
+      --action "lambda:InvokeFunction" \
+      --source-arn "arn:aws:logs:us-east-1:123456789123:log-group:CloudTrail/logs:*" \
+      --source-account "123456789123"
+  ```
 6. Create a subscription filter. At a command prompt, run the following command and substitute account 123456789123 with your own and change the log-group-name to be the log group you want to process:
-```
-aws logs put-subscription-filter \
-    --log-group-name CloudTrail/logs \
-    --filter-name apitracker \
-    --filter-pattern "" \
-    --destination-arn arn:aws:lambda:us-east-1:123456789123:function:apitracker
-```
+  ```
+  aws logs put-subscription-filter \
+      --log-group-name CloudTrail/logs \
+      --filter-name apitracker \
+      --filter-pattern "" \
+      --destination-arn arn:aws:lambda:us-east-1:123456789123:function:apitracker
+  ```
 
 ## Console Installation
 
