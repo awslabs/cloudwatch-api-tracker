@@ -78,6 +78,7 @@ Here is the data flow:
       --source-account "123456789123"
   ```
 6. Create a subscription filter. At a command prompt, run the following command and substitute account 123456789123 with your own and change the log-group-name to be the log group you want to process:
+
   ```
   aws logs put-subscription-filter \
       --log-group-name CloudTrail/logs \
