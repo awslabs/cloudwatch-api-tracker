@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Cloudwatch API Tracker
  *
@@ -22,20 +24,20 @@
 
  **/
 
-var AWS = require('aws-sdk');
-var cloudwatch = new AWS.CloudWatch();
-var zlib = require('zlib');
-var BATCH = 20;
-var JITTER_MS = 3000;
-var NAMESPACE = "API-COUNT";
+const AWS = require('aws-sdk');
+const cloudwatch = new AWS.CloudWatch();
+const zlib = require('zlib');
+const BATCH = 20;
+const JITTER_MS = 3000;
+const NAMESPACE = "API-COUNT";
 
 exports.handler = function(input, context, callback) {
 
     // API metrics array.
-    var apiMetrics = {};
+    let apiMetrics = {};
 
     // decode input from base64
-    var zippedInput = new Buffer(input.awslogs.data, 'base64');
+    const zippedInput = new Buffer(input.awslogs.data, 'base64');
 
     // decompress the input
     zlib.gunzip(zippedInput, function(err, buffer) {
@@ -46,7 +48,7 @@ exports.handler = function(input, context, callback) {
 
         // Parse JSON from input.
 
-        var awslogsData = JSON.parse(buffer.toString('utf8'));
+        const awslogsData = JSON.parse(buffer.toString('utf8'));
 
         if (awslogsData.messageType === 'CONTROL_MESSAGE') {
             callback(null, "Successfully posted control message!");
@@ -59,9 +61,9 @@ exports.handler = function(input, context, callback) {
 
         awslogsData.logEvents.forEach(function(logEvent, index, logEventsArr) {
 
-          var event = JSON.parse(logEvent.message);
+          const event = JSON.parse(logEvent.message);
 
-          var hash = event.region+":"+event.eventName+":"+event.eventSource+":"+event.eventTime;
+          const hash = event.region+":"+event.eventName+":"+event.eventSource+":"+event.eventTime;
 
           if (apiMetrics[hash]) {
             apiMetrics[hash].Value++;
@@ -83,12 +85,12 @@ exports.handler = function(input, context, callback) {
 
         });
 
-        var apiMetricParams = [];
-        var promiseList = [];
+        let apiMetricParams = [];
+        let promiseList = [];
 
         // Submit every 20 metric
 
-        for (var hash in apiMetrics) {
+        for (const hash in apiMetrics) {
           apiMetricParams.push(apiMetrics[hash]);
           if (apiMetricParams.length==BATCH) {
             promiseList.push(postToCloudWatch(apiMetricParams));
@@ -117,8 +119,8 @@ exports.handler = function(input, context, callback) {
  * to CloudWatch.
  **/
 function postToCloudWatch(chunkedDataArray) {
-    var promise = new Promise(function(resolve, reject) {
-        var params = {
+    const promise = new Promise(function(resolve, reject) {
+        const params = {
             MetricData: chunkedDataArray,
             Namespace: NAMESPACE
         };

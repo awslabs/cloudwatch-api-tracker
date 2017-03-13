@@ -1,6 +1,6 @@
 {
   "name": "cloudwatch-api-tracker",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "This lambda function will post CloudWatch metrics based on API usage data from CloudWatch Logs.",
   "main": "app.js",
   "scripts": {
@@ -17,8 +17,5 @@
   ],
   "author": "Ho Ming Li, Jeremy Wallace, Joe Hsieh",
   "license": "Apache 2.0",
-  "dependencies": {
-    "zlib": "^1.0.5",
-    "aws-sdk": "2.x"
-  }
+  "dependencies": {}
 }
