@@ -2,7 +2,7 @@
 
 This application was designed to give customers greater insight into their AWS API usage by generating custom CloudWatch Metrics based on CloudTrail logs.
 
-**VERSION:** 0.1.0
+**VERSION:** 0.1.1
 **AUTHORS:** Joe Hsieh, Ho Ming Li, Jeremy Wallace
 
 ## Design
@@ -52,23 +52,21 @@ Below are two different ways of configuring your AWS environment to collect metr
   aws iam create-policy --policy-name putMetricsPolicy --policy-document file://lambdapolicy.json
   aws iam attach-role-policy --role-name apitrackerrole --policy-arn <POLICY_ARN>
   ```
-3. Clone this repository and zip up the nodejs directory.
+3. Clone this repository and zip up the content in the nodejs directory.
 
   ```
   cd nodejs
-  npm install
-  cd ../
-  zip -r apitracker.zip nodejs
+  zip -r apitracker.zip *
   ```
-4. At a command prompt, run the following command, where role-arn is the Lambda execution role set up in the first step, found in the IAM console under Roles:
+4. At a command prompt, run the following command, where role-arn is the Lambda execution role set up in the first step, substitute account 123456789123 with your own:
 
   ```
   aws lambda create-function \
       --function-name apitracker \
-      --zip-file file://apitracker.zip \
-      --role apitrackerrole \
+      --zip-file fileb://apitracker.zip \
+      --role arn:aws:iam::123456789123:role/apitrackerrole \
       --handler app.handler \
-      --runtime nodejs
+      --runtime nodejs4.3
   ```
 5. Grant CloudWatch Logs the permission to execute your function. At a command prompt, run the following command and substitute account 123456789123 with your own and change the log-group to be the log group you want to process:
 
