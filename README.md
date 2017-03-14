@@ -58,7 +58,7 @@ Below are two different ways of configuring your AWS environment to collect metr
   cd nodejs
   zip -r apitracker.zip *
   ```
-4. At a command prompt, run the following command, where role-arn is the Lambda execution role set up in the first step, substitute account 123456789123 with your own:
+4. Run the following command, where role-arn is the Lambda execution role set up in the first step, substitute account 123456789123 with your own, and adjust timeout if necessary:
 
   ```
   aws lambda create-function \
@@ -66,9 +66,10 @@ Below are two different ways of configuring your AWS environment to collect metr
       --zip-file fileb://apitracker.zip \
       --role arn:aws:iam::123456789123:role/apitrackerrole \
       --handler app.handler \
-      --runtime nodejs4.3
+      --runtime nodejs4.3 \
+      --timeout 10 
   ```
-5. Grant CloudWatch Logs the permission to execute your function. At a command prompt, run the following command and substitute account 123456789123 with your own and change the log-group to be the log group you want to process:
+5. Grant CloudWatch Logs the permission to execute your function. Run the following command, review region, account id, and change the log-group to be the log group you want to process:
 
   ```
   aws lambda add-permission \
@@ -79,7 +80,7 @@ Below are two different ways of configuring your AWS environment to collect metr
       --source-arn "arn:aws:logs:us-east-1:123456789123:log-group:CloudTrail/logs:*" \
       --source-account "123456789123"
   ```
-6. Create a subscription filter. At a command prompt, run the following command and substitute account 123456789123 with your own and change the log-group-name to be the log group you want to process:
+6. Create a subscription filter. Adjust region, accound id, log-group-name accordingly:
 
   ```
   aws logs put-subscription-filter \

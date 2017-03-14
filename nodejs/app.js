@@ -28,7 +28,7 @@ const AWS = require('aws-sdk');
 const cloudwatch = new AWS.CloudWatch();
 const zlib = require('zlib');
 const BATCH = 20;
-const JITTER_MS = 3000;
+const JITTER_MS = 500;
 const NAMESPACE = "API-COUNT";
 
 exports.handler = function(input, context, callback) {
