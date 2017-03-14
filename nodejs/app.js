@@ -27,9 +27,10 @@
 const AWS = require('aws-sdk');
 const cloudwatch = new AWS.CloudWatch();
 const zlib = require('zlib');
-const BATCH = 20;
-const JITTER_MS = 500;
+
 const NAMESPACE = "API-COUNT";
+const JITTER_MS = 3000; // spread "PutMetricData" calls to avoid throttling at scale
+const BATCH = 20; // batch size for "PutMetricData" call
 
 exports.handler = function(input, context, callback) {
 
@@ -42,9 +43,7 @@ exports.handler = function(input, context, callback) {
     // decompress the input
     zlib.gunzip(zippedInput, function(err, buffer) {
 
-        if (err) {
-            callback(err);
-        }
+        if (err) { callback(err); }
 
         // Parse JSON from input.
 
@@ -52,7 +51,6 @@ exports.handler = function(input, context, callback) {
 
         if (awslogsData.messageType === 'CONTROL_MESSAGE') {
             callback(null, "Successfully posted control message!");
-            return null;
         }
 
         // Populate metrics params array from log events.
@@ -88,7 +86,7 @@ exports.handler = function(input, context, callback) {
         let apiMetricParams = [];
         let promiseList = [];
 
-        // Submit every 20 metric
+        // Submit every 20 metric (BATCH size)
 
         for (const hash in apiMetrics) {
           apiMetricParams.push(apiMetrics[hash]);
@@ -119,7 +117,7 @@ exports.handler = function(input, context, callback) {
  * to CloudWatch.
  **/
 function postToCloudWatch(chunkedDataArray) {
-    const promise = new Promise(function(resolve, reject) {
+    return new Promise(function(resolve, reject) {
         const params = {
             MetricData: chunkedDataArray,
             Namespace: NAMESPACE
@@ -135,5 +133,4 @@ function postToCloudWatch(chunkedDataArray) {
             }
         })} , Math.floor(Math.random() * JITTER_MS));
     });
-    return promise;
 }
