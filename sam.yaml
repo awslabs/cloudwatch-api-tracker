@@ -1,0 +1,58 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: Server-side API Tracker 
+
+Resources:
+  APITrackerRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Policies: 
+        - 
+          PolicyName: "CWlogs"
+          PolicyDocument: 
+            Version: "2012-10-17"
+            Statement:
+              -
+                Effect: "Allow"
+                Action: [ "logs:CreateLogGroup","logs:CreateLogStream","logs:PutLogEvents" ]
+                Resource: "arn:aws:logs:*:*:*"
+              -
+                Effect: "Allow"
+                Action: "cloudwatch:PutMetricData"
+                Resource: "*"
+
+  APITrackerLambdaFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Runtime: "nodejs4.3"
+      CodeUri: nodejs 
+      Handler: app.handler
+      Description: "Send CloudTrail Event Counts to CloudWatch Metrics"
+      MemorySize: 128
+      Timeout: 10
+      Role: !GetAtt [ APITrackerRole, Arn ]
+
+  CloudTrailLogFilter:
+    Type: 'AWS::Logs::SubscriptionFilter'
+    Properties: 
+      DestinationArn: !GetAtt [ APITrackerLambdaFunction, Arn ]
+      FilterPattern: ""
+      LogGroupName: "CloudTrail/logs"
+  
+  LambdaPermission: 
+    Type: "AWS::Lambda::Permission"
+    Properties: 
+      Action: "lambda:InvokeFunction"
+      FunctionName: !Ref APITrackerLambdaFunction
+      Principal: !Join [ ".", [ "logs", !Ref 'AWS::Region', "amazonaws.com" ] ]
+      SourceAccount: !Ref AWS::AccountId
+      SourceArn: !Join [ ":", [ "arn:aws:logs", !Ref 'AWS::Region', !Ref 'AWS::AccountId', "log-group:CloudTrail/logs:*" ] ]
