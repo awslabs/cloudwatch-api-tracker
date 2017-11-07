@@ -3,6 +3,7 @@
 This application was designed to give customers greater insight into their AWS API usage by generating custom CloudWatch Metrics based on CloudTrail logs.
 
 **VERSION:** 0.1.1
+
 **AUTHORS:** Joe Hsieh, Ho Ming Li, Jeremy Wallace
 
 ## Design
@@ -16,15 +17,18 @@ Here is the data flow:
 
 Below are two different ways of configuring your AWS environment to collect metrics on API usage using this lambda function. You could configure the AWS environment with the command line, or through the web console.
 
-## Command Line Installation
+## Command Line Installation (Recommended)
 
 1. [Follow the guide here](http://docs.aws.amazon.com/awscloudtrail/latest/userguide/send-cloudtrail-events-to-cloudwatch-logs.html) to send CloudTrail logs to CloudWatch Logs.
+
 2. Define a S3 bucket for SAM artifacts
   ```
+  $ aws s3 mb s3://mys3bucket
   $ export S3_BUCKET=mys3bucket
   $ export S3_PREFIX=cloudwatch-api-tracker-sam-artifacts
   ```
-3. Clone this repository and zip up the content in the nodejs directory.
+
+3. Transform the SAM template to get the output template for CloudFormation
 
   ```
   $ aws cloudformation package --template-file sam.yaml --output-template-file sam-output.yaml --s3-bucket $S3_BUCKET --s3-prefix $S3_PREFIX
