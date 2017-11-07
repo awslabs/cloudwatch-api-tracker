@@ -2,6 +2,12 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: 'AWS::Serverless-2016-10-31'
 Description: Server-side API Tracker 
 
+Parameters:
+  CloudTrailLogGroupName:
+    Default: 'CloudTrail/logs'
+    Type: String
+    Description: Enter the name of the log group
+
 Resources:
   APITrackerRole:
     Type: "AWS::IAM::Role"
@@ -15,20 +21,24 @@ Resources:
               Service: "lambda.amazonaws.com"
             Action:
               - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
       Policies: 
         - 
-          PolicyName: "CWlogs"
+          PolicyName: "WriteMetricToCW"
           PolicyDocument: 
             Version: "2012-10-17"
             Statement:
               -
                 Effect: "Allow"
-                Action: [ "logs:CreateLogGroup","logs:CreateLogStream","logs:PutLogEvents" ]
-                Resource: "arn:aws:logs:*:*:*"
-              -
-                Effect: "Allow"
                 Action: "cloudwatch:PutMetricData"
                 Resource: "*"
+
+  APITrackerCWLogs:
+      Type: 'AWS::Logs::LogGroup'
+      Properties:
+        LogGroupName: !Join [ "/", [ "/aws/lambda", !Ref APITrackerLambdaFunction ] ]
+        RetentionInDays: 7
 
   APITrackerLambdaFunction:
     Type: 'AWS::Serverless::Function'
@@ -46,13 +56,13 @@ Resources:
     Properties: 
       DestinationArn: !GetAtt [ APITrackerLambdaFunction, Arn ]
       FilterPattern: ""
-      LogGroupName: "CloudTrail/logs"
+      LogGroupName: !Ref CloudTrailLogGroupName
   
   LambdaPermission: 
     Type: "AWS::Lambda::Permission"
     Properties: 
       Action: "lambda:InvokeFunction"
-      FunctionName: !Ref APITrackerLambdaFunction
+      FunctionName: !GetAtt [ APITrackerLambdaFunction, Arn ]
       Principal: !Join [ ".", [ "logs", !Ref 'AWS::Region', "amazonaws.com" ] ]
       SourceAccount: !Ref AWS::AccountId
-      SourceArn: !Join [ ":", [ "arn:aws:logs", !Ref 'AWS::Region', !Ref 'AWS::AccountId', "log-group:CloudTrail/logs:*" ] ]
+      SourceArn: !Join [ ":", [ "arn:aws:logs", !Ref 'AWS::Region', !Ref 'AWS::AccountId', "log-group", !Ref CloudTrailLogGroupName,"*" ] ]
