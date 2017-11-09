@@ -36,13 +36,13 @@ Below are two different ways of configuring your AWS environment to collect metr
 
 3. Deploy the SAM output template
 
-  a. creates a new trail
+    a. creates a new trail
 
     ```
     $ aws cloudformation deploy --template-file sam-output.yaml --stack-name cloudwatch-api-tracker --capabilities CAPABILITY_IAM
     ```
 
-  b. using an existing trail - ensure you have CloudTrail logs sent to CloudWatch Logs. [Follow the guide here](http://docs.aws.amazon.com/awscloudtrail/latest/userguide/send-cloudtrail-events-to-cloudwatch-logs.html). Replace $CloudWatchLogGroupName with your own.
+    b. using an existing trail - ensure you have CloudTrail logs sent to CloudWatch Logs. [Follow the guide here](http://docs.aws.amazon.com/awscloudtrail/latest/userguide/send-cloudtrail-events-to-cloudwatch-logs.html). Replace $CloudWatchLogGroupName with your own.
     ```
     $ aws cloudformation deploy --template-file sam-output.yaml --stack-name cloudwatch-api-tracker --capabilities CAPABILITY_IAM --parameter-overrides CloudTrailLogGroupName=$CloudWatchLogGroupName
     ```
