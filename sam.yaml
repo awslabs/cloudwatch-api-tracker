@@ -3,13 +3,111 @@ Transform: 'AWS::Serverless-2016-10-31'
 Description: Server-side API Tracker 
 
 Parameters:
+
+  ### NEW TRAIL IF CLOUDTRAIL LOG GROUP NOT DEFINED
+  ### USE EXISTING TRAIL LOG GROUP IF DEFINED
+
   CloudTrailLogGroupName:
-    Default: 'CloudTrail/logs'
+    Default: ""
     Type: String
-    Description: Enter the name of the log group
+    Description: Enter existing cloudtrail log group name (leave empty for new trail)
+
+Conditions:
+  NeedsNewTrail: !Equals ["", !Ref CloudTrailLogGroupName]
 
 Resources:
-  APITrackerRole:
+
+  #### Resources for New Trail ####
+  # S3 bucket, Role, Trail, Log Group
+
+  NewTrail: 
+    Condition: NeedsNewTrail
+    Type: AWS::CloudTrail::Trail
+    Properties: 
+      CloudWatchLogsLogGroupArn: !GetAtt NewTrailCWLogGroup.Arn
+      CloudWatchLogsRoleArn: !GetAtt NewTrailRole.Arn
+      S3BucketName: 
+        Ref: NewTrailBucket
+      IsLogging: true
+      IsMultiRegionTrail: true
+      IncludeGlobalServiceEvents: true
+
+  NewTrailRole:
+    Condition: NeedsNewTrail
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service: "cloudtrail.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Policies: 
+        - 
+          PolicyName: "CTtoLogs"
+          PolicyDocument: 
+            Version: "2012-10-17"
+            Statement:
+              -
+                Effect: "Allow"
+                Action:
+                - "logs:PutLogEvents"
+                - "logs:CreateLogStream"
+                Resource: !Join [ ":", [ "arn:aws:logs", !Ref 'AWS::Region', !Ref 'AWS::AccountId', "log-group", !Ref NewTrailCWLogGroup, "log-stream:*" ] ]
+
+  NewTrailCWLogGroup:
+    Condition: NeedsNewTrail
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      RetentionInDays: 7
+
+  NewTrailBucket: 
+    Condition: NeedsNewTrail
+    Type: "AWS::S3::Bucket"
+    Properties:
+      LifecycleConfiguration:
+        Rules:
+          - ExpirationInDays: 7
+            Status: "Enabled"
+
+  NewTrailBucketPolicy: 
+    Condition: NeedsNewTrail
+    Type: "AWS::S3::BucketPolicy"
+    Properties: 
+      Bucket: 
+        Ref: NewTrailBucket
+      PolicyDocument: 
+        Version: "2012-10-17"
+        Statement: 
+          - 
+            Sid: "AWSCloudTrailAclCheck"
+            Effect: "Allow"
+            Principal: 
+              Service: "cloudtrail.amazonaws.com"
+            Action: "s3:GetBucketAcl"
+            Resource: 
+              !Sub |-
+                arn:aws:s3:::${NewTrailBucket}
+          - 
+            Sid: "AWSCloudTrailWrite"
+            Effect: "Allow"
+            Principal: 
+              Service: "cloudtrail.amazonaws.com"
+            Action: "s3:PutObject"
+            Resource:
+              !Sub |-
+                arn:aws:s3:::${NewTrailBucket}/AWSLogs/${AWS::AccountId}/*
+            Condition: 
+              StringEquals:
+                s3:x-amz-acl: "bucket-owner-full-control"
+
+  #### Resources related to Lambda Function ####
+  # Role, Log Group, Function
+  
+  APITrackerLambdaRole:
     Type: "AWS::IAM::Role"
     Properties:
       AssumeRolePolicyDocument:
@@ -33,7 +131,7 @@ Resources:
                 Effect: "Allow"
                 Action: "cloudwatch:PutMetricData"
                 Resource: "*"
-
+  
   APITrackerCWLogs:
       Type: 'AWS::Logs::LogGroup'
       Properties:
@@ -49,14 +147,18 @@ Resources:
       Description: "Send CloudTrail Event Counts to CloudWatch Metrics"
       MemorySize: 128
       Timeout: 10
-      Role: !GetAtt [ APITrackerRole, Arn ]
+      Role: !GetAtt [ APITrackerLambdaRole, Arn ]
 
+  #### Resources for CW Logs to Lambda ####
+  # CW Log Filter, Lambda Permission
+  
   CloudTrailLogFilter:
     Type: 'AWS::Logs::SubscriptionFilter'
     Properties: 
       DestinationArn: !GetAtt [ APITrackerLambdaFunction, Arn ]
+      LogGroupName: !If [NeedsNewTrail, !Ref NewTrailCWLogGroup, !Ref CloudTrailLogGroupName]
       FilterPattern: ""
-      LogGroupName: !Ref CloudTrailLogGroupName
+    DependsOn: LambdaPermission
   
   LambdaPermission: 
     Type: "AWS::Lambda::Permission"
@@ -65,4 +167,4 @@ Resources:
       FunctionName: !GetAtt [ APITrackerLambdaFunction, Arn ]
       Principal: !Join [ ".", [ "logs", !Ref 'AWS::Region', "amazonaws.com" ] ]
       SourceAccount: !Ref AWS::AccountId
-      SourceArn: !Join [ ":", [ "arn:aws:logs", !Ref 'AWS::Region', !Ref 'AWS::AccountId', "log-group", !Ref CloudTrailLogGroupName,"*" ] ]
+      SourceArn: !Join [ ":", [ "arn:aws:logs", !Ref 'AWS::Region', !Ref 'AWS::AccountId', "log-group",  !If [NeedsNewTrail, !Ref NewTrailCWLogGroup, !Ref CloudTrailLogGroupName] ,"*" ] ]
