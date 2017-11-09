@@ -13,31 +13,43 @@ Here is the data flow:
 - AWS Lambda is triggered by new records that are written to the CloudWatch Log Stream.
 - AWS Lambda aggregates the number of API requests and publishes custom Amazon CloudWatch Metrics.
 
+By default, if an existing Cloudwatch Log Group is not specified during deployment, a new multi-region trail is created for the purpose of tracking Cloudtrail events. If you would like to use an existing trail, specify it as the `CloudTrailLogGroupName` parameter for CloudFormation.
+
 # Installation
 
 Below are two different ways of configuring your AWS environment to collect metrics on API usage using this lambda function. You could configure the AWS environment with the command line, or through the web console.
 
-## Command Line Installation (Recommended)
+## Quick Start - Command Line Installation (Recommended)
 
-1. [Follow the guide here](http://docs.aws.amazon.com/awscloudtrail/latest/userguide/send-cloudtrail-events-to-cloudwatch-logs.html) to send CloudTrail logs to CloudWatch Logs.
-
-2. Define a S3 bucket for SAM artifacts
+1. Define a S3 bucket for SAM artifacts
   ```
   $ aws s3 mb s3://mys3bucket
   $ export S3_BUCKET=mys3bucket
   $ export S3_PREFIX=cloudwatch-api-tracker-sam-artifacts
   ```
 
-3. Transform the SAM template to get the output template for CloudFormation
+2. Transform the SAM template to get the output template for CloudFormation
 
   ```
   $ aws cloudformation package --template-file sam.yaml --output-template-file sam-output.yaml --s3-bucket $S3_BUCKET --s3-prefix $S3_PREFIX
   ```
-4. Deploy the SAM output template
 
-  ```
-  $ aws cloudformation deploy --template-file sam-output.yaml --stack-name cloudwatch-api-tracker --capabilities CAPABILITY_IAM
-  ```
+3. Deploy the SAM output template
+
+  a. creates a new trail
+
+    ```
+    $ aws cloudformation deploy --template-file sam-output.yaml --stack-name cloudwatch-api-tracker --capabilities CAPABILITY_IAM
+    ```
+
+  b. using an existing trail - ensure you have CloudTrail logs sent to CloudWatch Logs. [Follow the guide here](http://docs.aws.amazon.com/awscloudtrail/latest/userguide/send-cloudtrail-events-to-cloudwatch-logs.html). Replace $CloudWatchLogGroupName with your own.
+    ```
+    $ aws cloudformation deploy --template-file sam-output.yaml --stack-name cloudwatch-api-tracker --capabilities CAPABILITY_IAM --parameter-overrides CloudTrailLogGroupName=$CloudWatchLogGroupName
+    ```
+
+4. Soon after CloudFromation stack creation completes, verify that the lambda function is being invoked and that no errors are produced.
+
+Congratulations! You have set up API tracker. You will now start to see metrics in CloudWatch.
 
 ## Console Installation
 
