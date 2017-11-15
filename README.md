@@ -21,20 +21,26 @@ Below are two different ways of configuring your AWS environment to collect metr
 
 ## Quick Start - Command Line Installation (Recommended)
 
-1. Define a S3 bucket for SAM artifacts
+1. If you do not have an s3 bucket you can use, create one.
+
   ```
-  $ aws s3 mb s3://mys3bucket
-  $ export S3_BUCKET=mys3bucket
+  $ aws s3 mb s3://<YOUR_S3_BUCKET>
+  ```
+
+2. Define the S3 bucket and prefix for SAM artifacts
+
+  ```
+  $ export S3_BUCKET=<YOUR_S3_BUCKET>
   $ export S3_PREFIX=cloudwatch-api-tracker-sam-artifacts
   ```
 
-2. Transform the SAM template to get the output template for CloudFormation
+3. Transform the SAM template to get the output template for CloudFormation
 
   ```
   $ aws cloudformation package --template-file sam.yaml --output-template-file sam-output.yaml --s3-bucket $S3_BUCKET --s3-prefix $S3_PREFIX
   ```
 
-3. Deploy the SAM output template
+4. Deploy the SAM output template
 
     a. creates a new trail
 
@@ -47,7 +53,7 @@ Below are two different ways of configuring your AWS environment to collect metr
     $ aws cloudformation deploy --template-file sam-output.yaml --stack-name cloudwatch-api-tracker --capabilities CAPABILITY_IAM --parameter-overrides CloudTrailLogGroupName=$CloudWatchLogGroupName
     ```
 
-4. Soon after CloudFromation stack creation completes, verify that the lambda function is being invoked and that no errors are produced.
+5. Soon after CloudFromation stack creation completes, verify that the lambda function is being invoked and that no errors are produced.
 
 Congratulations! You have set up API tracker. You will now start to see metrics in CloudWatch.
 
