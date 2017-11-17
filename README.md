@@ -3,6 +3,7 @@
 This application was designed to give customers greater insight into their AWS API usage by generating custom CloudWatch Metrics based on CloudTrail logs.
 
 **VERSION:** 0.1.1
+
 **AUTHORS:** Joe Hsieh, Ho Ming Li, Jeremy Wallace
 
 ## Design
@@ -12,83 +13,49 @@ Here is the data flow:
 - AWS Lambda is triggered by new records that are written to the CloudWatch Log Stream.
 - AWS Lambda aggregates the number of API requests and publishes custom Amazon CloudWatch Metrics.
 
+By default, if an existing Cloudwatch Log Group is not specified during deployment, a new multi-region trail is created for the purpose of tracking Cloudtrail events. If you would like to use an existing trail, specify it as the `CloudTrailLogGroupName` parameter for CloudFormation.
+
 # Installation
 
 Below are two different ways of configuring your AWS environment to collect metrics on API usage using this lambda function. You could configure the AWS environment with the command line, or through the web console.
 
-## Command Line Installation
+## Quick Start - Command Line Installation (Recommended)
 
-1. [Follow the guide here](http://docs.aws.amazon.com/awscloudtrail/latest/userguide/send-cloudtrail-events-to-cloudwatch-logs.html) to send CloudTrail logs to CloudWatch Logs.
-2. Create a role for the Lambda function:
-
-  ```
-  aws iam create-role --role-name apitrackerrole
-  nano lambdapolicy.json
-
-  {
-    "Version": "2012-10-17",
-    "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-      "logs:CreateLogGroup",
-      "logs:CreateLogStream",
-      "logs:PutLogEvents"
-      ],
-      "Resource": "arn:aws:logs:*:*:*"
-      },
-      {
-        "Effect": "Allow",
-        "Action": [
-        "cloudwatch:PutMetricData"
-        ],
-        "Resource": [
-        "*"
-        ]
-      }
-      ]
-    }
-
-  aws iam create-policy --policy-name putMetricsPolicy --policy-document file://lambdapolicy.json
-  aws iam attach-role-policy --role-name apitrackerrole --policy-arn <POLICY_ARN>
-  ```
-3. Clone this repository and zip up the content in the nodejs directory.
+1. If you do not have an s3 bucket you can use, create one.
 
   ```
-  cd nodejs
-  zip -r apitracker.zip *
+  $ aws s3 mb s3://<YOUR_S3_BUCKET>
   ```
-4. Run the following command, where role-arn is the Lambda execution role set up in the first step, substitute account 123456789123 with your own, and adjust timeout if necessary:
+
+2. Define the S3 bucket and prefix for SAM artifacts
 
   ```
-  aws lambda create-function \
-      --function-name apitracker \
-      --zip-file fileb://apitracker.zip \
-      --role arn:aws:iam::123456789123:role/apitrackerrole \
-      --handler app.handler \
-      --runtime nodejs4.3 \
-      --timeout 10 
+  $ export S3_BUCKET=<YOUR_S3_BUCKET>
+  $ export S3_PREFIX=cloudwatch-api-tracker-sam-artifacts
   ```
-5. Grant CloudWatch Logs the permission to execute your function. Run the following command, review region, account id, and change the log-group to be the log group you want to process:
+
+3. Transform the SAM template to get the output template for CloudFormation
 
   ```
-  aws lambda add-permission \
-      --function-name "apitracker" \
-      --statement-id "apitracker" \
-      --principal "logs.us-east-1.amazonaws.com" \
-      --action "lambda:InvokeFunction" \
-      --source-arn "arn:aws:logs:us-east-1:123456789123:log-group:CloudTrail/logs:*" \
-      --source-account "123456789123"
+  $ aws cloudformation package --template-file sam.yaml --output-template-file sam-output.yaml --s3-bucket $S3_BUCKET --s3-prefix $S3_PREFIX
   ```
-6. Create a subscription filter. Adjust region, accound id, log-group-name accordingly:
 
-  ```
-  aws logs put-subscription-filter \
-      --log-group-name CloudTrail/logs \
-      --filter-name apitracker \
-      --filter-pattern "" \
-      --destination-arn arn:aws:lambda:us-east-1:123456789123:function:apitracker
-  ```
+4. Deploy the SAM output template
+
+    a. creates a new trail
+
+    ```
+    $ aws cloudformation deploy --template-file sam-output.yaml --stack-name cloudwatch-api-tracker --capabilities CAPABILITY_IAM
+    ```
+
+    b. using an existing trail - ensure you have CloudTrail logs sent to CloudWatch Logs. [Follow the guide here](http://docs.aws.amazon.com/awscloudtrail/latest/userguide/send-cloudtrail-events-to-cloudwatch-logs.html). Replace $CloudWatchLogGroupName with your own.
+    ```
+    $ aws cloudformation deploy --template-file sam-output.yaml --stack-name cloudwatch-api-tracker --capabilities CAPABILITY_IAM --parameter-overrides CloudTrailLogGroupName=$CloudWatchLogGroupName
+    ```
+
+5. Soon after CloudFromation stack creation completes, verify that the lambda function is being invoked and that no errors are produced.
+
+Congratulations! You have set up API tracker. You will now start to see metrics in CloudWatch.
 
 ## Console Installation
 
