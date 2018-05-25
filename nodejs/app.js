@@ -8,7 +8,7 @@
  * and publishes metrics in specified batches.
  *
  * Authors: Joe Hsieh, Ho Ming Li, Jeremy Wallace
- 
+
      Copyright 2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 
      Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with the License. A copy of the License is located at
@@ -61,22 +61,27 @@ exports.handler = function(input, context, callback) {
 
           const event = JSON.parse(logEvent.message);
 
-          const hash = event.region+":"+event.eventName+":"+event.eventSource+":"+event.eventTime;
+          const hash = [event.eventTime, event.eventName, event.awsRegion, event.eventSource];
+
+          // Filling any undefined values to prevent errors on "PutMetricData" call.
+
+          for (index in hash) {
+            if (! hash[index]) {hash[index] = '-'}
+          }
 
           if (apiMetrics[hash]) {
             apiMetrics[hash].Value++;
           } else {
             apiMetrics[hash] = {
-              MetricName: event.eventName,
+              Timestamp: hash[0],
+              MetricName: hash[1],
               Dimensions: [{
-                  Name: 'awsRegion',
-                  Value: event.awsRegion
+                Name: 'awsRegion',
+                Value: hash[2]
               },{
-                  Name: 'eventSource',
-                  Value: event.eventSource
+                Name: 'eventSource',
+                Value: hash[3]
               }],
-              Timestamp: event.eventTime,
-              Unit: 'Count',
               Value: 1
             };
           }
