@@ -141,7 +141,7 @@ Resources:
   APITrackerLambdaFunction:
     Type: 'AWS::Serverless::Function'
     Properties:
-      Runtime: "nodejs4.3"
+      Runtime: "nodejs10.x"
       CodeUri: nodejs 
       Handler: app.handler
       Description: "Send CloudTrail Event Counts to CloudWatch Metrics"
