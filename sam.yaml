@@ -76,7 +76,7 @@ Resources:
   NewTrailBucketPolicy:
     Condition: NeedsNewTrail
     Type: "AWS::S3::BucketPolicy"
-    DependsOn: !Ref NewTrailBucket
+    DependsOn: NewTrailBucket
     Properties:
       Bucket:
         Ref: NewTrailBucket
