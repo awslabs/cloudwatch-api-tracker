@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: 'AWS::Serverless-2016-10-31'
-Description: Server-side API Tracker 
+Description: Server-side API Tracker
 
 Parameters:
 
@@ -20,13 +20,14 @@ Resources:
   #### Resources for New Trail ####
   # S3 bucket, Role, Trail, Log Group
 
-  NewTrail: 
+  NewTrail:
     Condition: NeedsNewTrail
     Type: AWS::CloudTrail::Trail
-    Properties: 
+    DependsOn: NewTrailBucketPolicy
+    Properties:
       CloudWatchLogsLogGroupArn: !GetAtt NewTrailCWLogGroup.Arn
       CloudWatchLogsRoleArn: !GetAtt NewTrailRole.Arn
-      S3BucketName: 
+      S3BucketName:
         Ref: NewTrailBucket
       IsLogging: true
       IsMultiRegionTrail: true
@@ -45,10 +46,10 @@ Resources:
               Service: "cloudtrail.amazonaws.com"
             Action:
               - "sts:AssumeRole"
-      Policies: 
-        - 
+      Policies:
+        -
           PolicyName: "CTtoLogs"
-          PolicyDocument: 
+          PolicyDocument:
             Version: "2012-10-17"
             Statement:
               -
@@ -64,7 +65,7 @@ Resources:
     Properties:
       RetentionInDays: 7
 
-  NewTrailBucket: 
+  NewTrailBucket:
     Condition: NeedsNewTrail
     Type: "AWS::S3::Bucket"
     Properties:
@@ -73,40 +74,41 @@ Resources:
           - ExpirationInDays: 7
             Status: "Enabled"
 
-  NewTrailBucketPolicy: 
+  NewTrailBucketPolicy:
     Condition: NeedsNewTrail
     Type: "AWS::S3::BucketPolicy"
-    Properties: 
-      Bucket: 
+    DependsOn: NewTrailBucket
+    Properties:
+      Bucket:
         Ref: NewTrailBucket
-      PolicyDocument: 
+      PolicyDocument:
         Version: "2012-10-17"
-        Statement: 
-          - 
+        Statement:
+          -
             Sid: "AWSCloudTrailAclCheck"
             Effect: "Allow"
-            Principal: 
+            Principal:
               Service: "cloudtrail.amazonaws.com"
             Action: "s3:GetBucketAcl"
-            Resource: 
+            Resource:
               !Sub |-
                 arn:aws:s3:::${NewTrailBucket}
-          - 
+          -
             Sid: "AWSCloudTrailWrite"
             Effect: "Allow"
-            Principal: 
+            Principal:
               Service: "cloudtrail.amazonaws.com"
             Action: "s3:PutObject"
             Resource:
               !Sub |-
                 arn:aws:s3:::${NewTrailBucket}/AWSLogs/${AWS::AccountId}/*
-            Condition: 
+            Condition:
               StringEquals:
                 s3:x-amz-acl: "bucket-owner-full-control"
 
   #### Resources related to Lambda Function ####
   # Log Group, Function
-  
+
   APITrackerCWLogs:
       Type: 'AWS::Logs::LogGroup'
       Properties:
@@ -116,8 +118,8 @@ Resources:
   APITrackerLambdaFunction:
     Type: 'AWS::Serverless::Function'
     Properties:
-      Runtime: "nodejs4.3"
-      CodeUri: nodejs 
+      Runtime: "nodejs10.x"
+      CodeUri: nodejs
       Handler: app.handler
       Description: "Send CloudTrail Event Counts to CloudWatch Metrics"
       MemorySize: 128
@@ -127,18 +129,18 @@ Resources:
 
   #### Resources for CW Logs to Lambda ####
   # CW Log Filter, Lambda Permission
-  
+
   CloudTrailLogFilter:
     Type: 'AWS::Logs::SubscriptionFilter'
-    Properties: 
+    Properties:
       DestinationArn: !GetAtt [ APITrackerLambdaFunction, Arn ]
       LogGroupName: !If [NeedsNewTrail, !Ref NewTrailCWLogGroup, !Ref CloudTrailLogGroupName]
       FilterPattern: ""
     DependsOn: LambdaPermission
-  
-  LambdaPermission: 
+
+  LambdaPermission:
     Type: "AWS::Lambda::Permission"
-    Properties: 
+    Properties:
       Action: "lambda:InvokeFunction"
       FunctionName: !GetAtt [ APITrackerLambdaFunction, Arn ]
       Principal: !Join [ ".", [ "logs", !Ref 'AWS::Region', "amazonaws.com" ] ]
