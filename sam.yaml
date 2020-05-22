@@ -23,6 +23,7 @@ Resources:
   NewTrail:
     Condition: NeedsNewTrail
     Type: AWS::CloudTrail::Trail
+    DependsOn: NewTrailBucketPolicy
     Properties:
       CloudWatchLogsLogGroupArn: !GetAtt NewTrailCWLogGroup.Arn
       CloudWatchLogsRoleArn: !GetAtt NewTrailRole.Arn
