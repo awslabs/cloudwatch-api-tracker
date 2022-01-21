@@ -4,7 +4,7 @@ This application was designed to give customers greater insight into their AWS A
 
 **VERSION:** 0.1.1
 
-**AUTHORS:** Joe Hsieh, Ho Ming Li, Jeremy Wallace
+**AUTHORS:** Joe Hsieh, Uzi Ashkenazi, Ho Ming Li, Jeremy Wallace
 
 ## Design
 
@@ -64,40 +64,62 @@ Please follow the instructions below to configure API tracker.
 ### Part One: Enable CloudTrail and CloudWatch Logs
 
 1. Create an AWS account and sign in to the *AWS Management Console*.
-2. Under Management Tools, click on **CloudTrail**.
-![CloudTrail trails](images/apitracker.1.png)
+2. Click Services in the top navigation then under Management & Governance, click on **CloudTrail**.
+
+![CloudTrail trails](images/api-tracker.1.png)
+
 3. Click **Trails** on the left menu bar.
-4. Click the blue **Add New Trail** button.
-![CloudTrail trails](images/apitracker.2.png)
-5. Name the trail and pick an *S3* bucket location to store the logs. Press create.
-6. Once created, click on your newly created *CloudTrail*.
-7. In the section *CloudWatch Logs*, click **configure**.
-![CloudTrail trails](images/apitracker.3.png)
-8. If you do not have a *CloudWatch Log Stream* created, name one here and press continue.
-9. Review the *IAM* policy and press Allow.
-![CloudTrail trails](images/apitracker.4.png)
-10. Click back to the CloudTrail page and ensure that CloudWatch Logs has been configured.
-![CloudTrail trails](images/apitracker.5.png)
+4. Click the orange **Add Trail** button.
+
+![CloudTrail trails](images/api-tracker.2.png)
+
+5. Name the trail and pick an *S3* bucket location to store the logs.
+6. Provide a *Customer managed AWS KMS key* alias or choose an existing one.
+7. In the section *CloudWatch Logs*, tick the **Enabled** and provide an *IAM Role* name.
+
+![CloudTrail trails](images/api-tracker.3.png)
+
+8. A *CloudWatch Log Group* will be created, adjust or accept the default name.
+9. Review the *IAM* policy and add any tags (optional).
+
+![CloudTrail trails](images/api-tracker.4.png)
+
+10. Click next. Select log event type (Management Events is selected by default).
+
+![CloudTrail trails](images/api-tracker.5.png)
+
+11. Click Next review the settings and click the *Create trail* orange button.
 
 ### Part Two: Configure and Upload the Lambda function
 
-1. Locally on your machine, run **npm install** in the **nodejs** directory (cloudwatch-api-tracker).
+1. Locally on your machine, run **npm install** inside the **nodejs** directory (cloudwatch-api-tracker).
 2. Create a new zip file based on the contents of this directory (cloudwatch-api-tracker).
 3. Open the *Lambda* Console page.
-![CloudTrail trails](images/apitracker.7.png)
+
+![CloudTrail trails](images/api-tracker.6.png)
+
 4. Create a new lambda function.
-![CloudTrail trails](images/apitracker.8.png)
-5. Select the **Blank Function** blueprint.
-6. Add a CloudWatch Logs Trigger.  
-![CloudTrail trails](images/apitracker.10.png)
-7. Name the filter and use the CloudTrail Log Group that you created above.
-![CloudTrail trails](images/apitracker.13.png)
-8. Press Next. Name the Lambda function.
-![CloudTrail trails](images/apitracker.14.png)
+
+![CloudTrail trails](images/api-tracker.7.png)
+
+5. Select the **Author from scratch** option provide a function name and select **Node.js** as the runtime.
+6. Click create function.
+7. Add a CloudWatch Logs Trigger.  
+
+![CloudTrail trails](images/api-tracker.8.png)
+7. Name the filter and use the CloudTrail Log Group created at trail creation.
+
+![CloudTrail trails](images/api-tracker.9.png)
+
+8. Press Add.
 9. Upload the ZIP file that you created above.
-![CloudTrail trails](images/apitracker.15.png)
+
+![CloudTrail trails](images/api-tracker.10.png)
+
 10. Set the handler to app.handler.
-![CloudTrail trails](images/apitracker.16.png)
+
+![CloudTrail trails](images/api-tracker.11.png)
+
 11. Create a new IAM role for the Lambda function with the following IAM policy.
 ```
 {
